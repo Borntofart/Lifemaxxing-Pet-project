@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="da" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dit program | Lifemaxxing</title>
+    <link rel="stylesheet" th:href="@{/css/loginScreen.css}">
+    <link rel="stylesheet" th:href="@{/css/onboarding.css}">
+</head>
+<body class="onboarding">
+<div class="background"></div>
+
+<div class="login-box onboarding-box">
+    <div class="logo">LIFE<span>MAXXING</span></div>
+    <p class="subtitle" th:text="${editing} ? 'Ret dine svar, så tilpasser vi dit program' : 'Svar på et par spørgsmål, så bygger vi et program til dig'">
+        Svar på et par spørgsmål
+    </p>
+
+    <div class="message error" th:if="${error}" th:text="${error}"></div>
+
+    <form th:action="@{/onboarding}" th:object="${form}" method="post">
+
+        <!-- 1. Profil -->
+        <section class="step">
+            <h2><span class="step-nr">1</span> Om dig</h2>
+
+            <div class="field-label">Køn</div>
+            <div class="options two" th:classappend="${errorField == 'gender'} ? 'invalid'">
+                <label class="option" th:each="g : ${genders}">
+                    <input type="radio" name="gender" th:value="${g}" th:checked="*{gender} == ${g}">
+                    <span class="option-card" th:text="${g.label}">Mand</span>
+                </label>
+            </div>
+
+            <div class="row three">
+                <div class="input-group">
+                    <label for="age">Alder</label>
+                    <input type="number" id="age" name="age" th:value="*{age}" min="10" max="100" placeholder="fx 25"
+                           th:classappend="${errorField == 'age'} ? 'invalid'">
+                </div>
+                <div class="input-group">
+                    <label for="heightCm">Højde (cm)</label>
+                    <input type="number" id="heightCm" name="heightCm" th:value="*{heightCm}" step="0.1" placeholder="fx 180"
+                           th:classappend="${errorField == 'heightCm'} ? 'invalid'">
+                </div>
+                <div class="input-group">
+                    <label for="weightKg">Vægt (kg)</label>
+                    <input type="number" id="weightKg" name="weightKg" th:value="*{weightKg}" step="0.1" placeholder="fx 82"
+                           th:classappend="${errorField == 'weightKg'} ? 'invalid'">
+                </div>
+            </div>
+
+            <div class="field-label">Erfaringsniveau</div>
+            <div class="options four" th:classappend="${errorField == 'experienceLevel'} ? 'invalid'">
+                <label class="option" th:each="l : ${levels}">
+                    <input type="radio" name="experienceLevel" th:value="${l}" th:checked="*{experienceLevel} == ${l}">
+                    <span class="option-card" th:text="${l.label}">Begynder</span>
+                </label>
+            </div>
+
+            <div class="input-group">
+                <label for="injuryNotes">Skader eller smerter <span class="hint">(lad stå tom hvis ingen)</span></label>
+                <input type="text" id="injuryNotes" name="injuryNotes" th:value="*{injuryNotes}" placeholder="fx ondt i venstre knæ">
+            </div>
+        </section>
+
+        <!-- 2. Mål -->
+        <section class="step">
+            <h2><span class="step-nr">2</span> Dit mål</h2>
+
+            <div class="options two" th:classappend="${errorField == 'goalType'} ? 'invalid'">
+                <label class="option" th:each="goal : ${goalTypes}">
+                    <input type="radio" name="goalType" th:value="${goal}" th:checked="*{goalType} == ${goal}">
+                    <span class="option-card">
+        <strong th:text="${goal.label}">Tabe mig</strong>
+        <small th:text="${goal.description}">beskrivelse</small>
+                    </span>
+                </label>
+            </div>
+
+            <div class="row three">
+                <div class="input-group">
+                    <label for="targetWeightKg">Målvægt (kg)</label>
+                    <input type="number" id="targetWeightKg" name="targetWeightKg" th:value="*{targetWeightKg}" step="0.1" placeholder="fx 75"
+                           th:classappend="${errorField == 'targetWeightKg'} ? 'invalid'">
+                </div>
+                <div class="input-group">
+                    <label for="weeklyWeightChangeKg">Kg pr. uge <span class="hint">(valgfri)</span></label>
+                    <input type="number" id="weeklyWeightChangeKg" name="weeklyWeightChangeKg" th:value="*{weeklyWeightChangeKg}" step="0.1" min="0" placeholder="fx 0,5"
+                           th:classappend="${errorField == 'weeklyWeightChangeKg'} ? 'invalid'">
+                </div>
+                <div class="input-group">
+                    <label for="deadline">Deadline <span class="hint">(valgfri)</span></label>
+                    <input type="date" id="deadline" name="deadline" th:value="*{deadline}"
+                           th:classappend="${errorField == 'deadline'} ? 'invalid'">
+                </div>
+            </div>
+
+            <div class="field-label">Hvad vil du opnå fysisk? <span class="hint">(vælg op til 2)</span></div>
+            <div class="options four" th:classappend="${errorField == 'physicalGoals'} ? 'invalid'">
+                <label class="option" th:each="pg : ${physicalOptions}">
+                    <input type="checkbox" name="physicalGoals" th:value="${pg}" th:checked="${#lists.contains(form.physicalGoals, pg)}">
+                    <span class="option-card" th:text="${pg}">Stærkere</span>
+                </label>
+            </div>
+        </section>
+
+        <!-- 3. Træning -->
+        <section class="step">
+            <h2><span class="step-nr">3</span> Din træning</h2>
+
+            <div class="field-label">Primært træningsfokus</div>
+            <div class="options two" th:classappend="${errorField == 'focus'} ? 'invalid'">
+                <label class="option">
+                    <input type="radio" name="focus" value="Styrke" th:checked="*{focus} == 'Styrke'">
+                    <span class="option-card"><strong>Styrke</strong><small>Tunge løft, squat, bænk og dødløft</small></span>
+                </label>
+                <label class="option">
+                    <input type="radio" name="focus" value="Cardio" th:checked="*{focus} == 'Cardio'">
+                    <span class="option-card"><strong>Cardio</strong><small>Løb, cykel og kondition</small></span>
+                </label>
+                <label class="option">
+                    <input type="radio" name="focus" value="HIIT" th:checked="*{focus} == 'HIIT'">
+                    <span class="option-card"><strong>HIIT</strong><small>Korte intense intervaller</small></span>
+                </label>
+                <label class="option">
+                    <input type="radio" name="focus" value="Blanding af alt" th:checked="*{focus} == 'Blanding af alt'">
+                    <span class="option-card"><strong>Blanding af alt</strong><small>Mix af styrke og cardio</small></span>
+                </label>
+            </div>
+
+            <div class="field-label">Hvad skal med i programmet?</div>
+            <div class="options two">
+                <label class="option">
+                    <input type="checkbox" name="wantsStrength" value="true" th:checked="*{wantsStrength}">
+                    <span class="option-card">Styrketræning</span>
+                </label>
+                <label class="option">
+                    <input type="checkbox" name="wantsCardio" value="true" th:checked="*{wantsCardio}">
+                    <span class="option-card">Cardio</span>
+                </label>
+            </div>
+
+            <div class="field-label">Træningsstil</div>
+            <div class="options two" th:classappend="${errorField == 'trainingStyle'} ? 'invalid'">
+                <label class="option">
+                    <input type="radio" name="trainingStyle" value="Bodybuilder" th:checked="*{trainingStyle} == 'Bodybuilder'">
+                    <span class="option-card"><strong>Bodybuilder</strong><small>Volumen, muskelvækst og isolation</small></span>
+                </label>
+                <label class="option">
+                    <input type="radio" name="trainingStyle" value="Atlet" th:checked="*{trainingStyle} == 'Atlet'">
+                    <span class="option-card"><strong>Atlet</strong><small>Basisøvelser, power og funktionel styrke</small></span>
+                </label>
+            </div>
+
+            <div class="field-label">Dage om ugen</div>
+            <div class="options seven" th:classappend="${errorField == 'trainingDaysPerWeek'} ? 'invalid'">
+                <label class="option" th:each="d : ${#numbers.sequence(1, 7)}">
+                    <input type="radio" name="trainingDaysPerWeek" th:value="${d}" th:checked="*{trainingDaysPerWeek} == ${d}">
+                    <span class="option-card pill" th:text="${d}">1</span>
+                </label>
+            </div>
+
+            <div class="field-label">Tid pr. træning</div>
+            <div class="options four" th:classappend="${errorField == 'sessionDurationMin'} ? 'invalid'">
+                <label class="option" th:each="m : ${durations}">
+                    <input type="radio" name="sessionDurationMin" th:value="${m}" th:checked="*{sessionDurationMin} == ${m}">
+                    <span class="option-card pill" th:text="${m} + ' min'">60 min</span>
+                </label>
+            </div>
+        </section>
+
+        <button type="submit" th:text="${editing} ? 'Gem og opdater mit program' : 'Lav mit program'">Lav mit program</button>
+    </form>
+
+    <p class="register" th:if="${editing}">
+        <a th:href="@{/dashboard}">Tilbage til overblikket</a>
+    </p>
+</div>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="da" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log ind | Lifemaxxing</title>
+    <link rel="stylesheet" th:href="@{/css/loginScreen.css}">
+</head>
+<body>
+<div class="background"></div>
+
+<div class="login-box">
+    <div class="logo">LIFE<span>MAXXING</span></div>
+    <p class="subtitle">Log ind og fortsæt hvor du slap</p>
+
+    <div class="message success" th:if="${success}" th:text="${success}"></div>
+    <div class="message error" th:if="${error}" th:text="${error}"></div>
+
+    <form th:action="@{/login}" th:object="${form}" method="post">
+        <div class="input-group">
+            <label for="username">Brugernavn</label>
+            <input type="text" id="username" name="username" th:value="*{username}" placeholder="Dit brugernavn"
+                   th:classappend="${errorField == 'username' or errorField == 'both'} ? 'invalid'">
+        </div>
+
+        <div class="input-group">
+            <label for="password">Kodeord</label>
+            <input type="password" id="password" name="password" placeholder="Dit kodeord"
+                   th:classappend="${errorField == 'password' or errorField == 'both'} ? 'invalid'">
+        </div>
+
+        <a href="#" class="forgot-password">Glemt kodeord?</a>
+
+        <button type="submit">Log ind</button>
+    </form>
+
+    <p class="register">
+        Har du ikke en bruger? <a th:href="@{/register}">Opret bruger</a>
+    </p>
+</div>
+</body>
+</html>

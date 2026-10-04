@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="da" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overblik | Lifemaxxing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+</head>
+<body>
+
+<!-- Topmenu -->
+<header class="topbar">
+    <a th:href="@{/dashboard}" class="brand">LIFE<span>MAXXING</span></a>
+
+    <nav class="nav">
+        <a th:href="@{/dashboard}" class="nav-link active">
+            <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10h-6v-6H9v6H3z"/></svg>
+            Overblik
+        </a>
+        <a href="#" class="nav-link">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+            Mit program
+        </a>
+        <a href="#" class="nav-link">
+            <svg viewBox="0 0 24 24"><path d="M6 3v8a2 2 0 0 0 4 0V3M8 11v10M17 3c-2 2-2 6 0 8v10"/></svg>
+            Kostplan
+        </a>
+        <a href="#" class="nav-link">
+            <svg viewBox="0 0 24 24"><path d="M4 20V12M10 20V6M16 20v-9M22 20H2"/></svg>
+            Tracking
+        </a>
+        <a th:href="@{/onboarding}" class="nav-link">
+            <svg viewBox="0 0 24 24"><rect x="2" y="8" width="20" height="8" rx="4" transform="rotate(-45 12 12)"/><path d="M9 9l6 6"/></svg>
+            Skade &amp; Tilpasning
+        </a>
+        <a th:href="@{/onboarding}" class="nav-link">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>
+            Indstillinger
+        </a>
+    </nav>
+
+    <div class="user-menu">
+        <span class="avatar" th:text="${view.initials}">MN</span>
+        <span class="user-name" th:text="${view.username}">Mads</span>
+        <a th:href="@{/logout}" class="logout">Log ud</a>
+    </div>
+</header>
+
+<main class="page">
+
+    <h1>Hej <span th:text="${view.username}">Mads</span>!</h1>
+    <p class="lead">Her er dit overblik. Hold fokus og bliv den bedste udgave af dig selv.</p>
+
+    <!-- Mål -->
+    <section class="card goal-card">
+        <div class="goal-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg>
+        </div>
+
+        <div class="goal-main">
+            <div class="muted small">Dit mål</div>
+            <div class="goal-title" th:text="${view.goalTitle}">Tabe 4 kg</div>
+            <div class="progress-row">
+                <div class="progress">
+                    <div class="progress-fill" th:style="'width:' + ${view.progressPercent} + '%'"></div>
+                </div>
+                <span class="progress-pct" th:text="${view.progressPercent} + '%'">65%</span>
+            </div>
+        </div>
+
+        <div class="goal-stats">
+            <div class="stat">
+                <div class="muted small">Start vægt</div>
+                <div class="stat-value" th:text="${view.startWeight}">82 kg</div>
+            </div>
+            <div class="stat">
+                <div class="muted small">Nuværende vægt</div>
+                <div class="stat-value" th:text="${view.currentWeight}">78,6 kg</div>
+            </div>
+            <div class="stat">
+                <div class="muted small">Mål vægt</div>
+                <div class="stat-value" th:text="${view.targetWeight}">75 kg</div>
+            </div>
+            <div class="stat">
+                <div class="muted small">Forventet dato</div>
+                <div class="stat-value" th:text="${view.deadline}">12. apr. 2025</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="grid">
+
+        <!-- Dagens træning -->
+        <section class="card">
+            <div class="card-head">
+                <h2>Dagens træning</h2>
+                <a href="#" class="link">Se hele planen &rsaquo;</a>
+            </div>
+
+            <div class="category" th:text="${view.todaysWorkout.category}">Styrketræning</div>
+            <h3 class="workout-title" th:text="${view.todaysWorkout.title}">Push – Overkrop</h3>
+
+            <div th:if="${view.todaysWorkout.restDay}" class="rest-day">
+                <p>I dag er hviledag. Restitution er når musklerne vokser, så tag en gåtur og spis godt.</p>
+                <p th:if="${view.nextWorkoutTitle}" class="muted">
+                    Næste træning: <strong th:text="${view.nextWorkoutTitle}">Pull</strong>
+                </p>
+            </div>
+
+            <ul class="exercise-list" th:unless="${view.todaysWorkout.restDay}">
+                <li th:each="ex, stat : ${view.todaysWorkout.exercises}">
+                    <span class="ex-nr" th:text="${stat.count}">1</span>
+                    <span class="ex-name" th:text="${ex.name}">Bænkpres</span>
+                    <span class="ex-dose" th:text="${ex.dosage}">4 x 8-10</span>
+                </li>
+            </ul>
+
+            <p class="muted small split" th:text="'Dit split: ' + ${view.splitText}">Dit split: PPL</p>
+            <a href="#" class="btn-primary">Se program</a>
+        </section>
+
+        <!-- Dagens menu, ud fra makroplanen -->
+        <section class="card">
+            <div class="card-head">
+                <h2>Dagens menu</h2>
+                <a href="#" class="link">Se hele kostplanen &rsaquo;</a>
+            </div>
+
+            <div class="macro-total">
+                <div>
+                    <span class="kcal" th:text="${view.macroPlan.calorieGoal}">2450</span>
+                    <span class="muted">kcal i dag</span>
+                </div>
+                <div class="muted small">
+                    P: <span th:text="${view.macroPlan.proteinGram}">180</span>g
+                    &nbsp; K: <span th:text="${view.macroPlan.carbohydrateGram}">250</span>g
+                    &nbsp; F: <span th:text="${view.macroPlan.fatGram}">80</span>g
+                </div>
+            </div>
+
+            <div class="meals">
+                <div class="meal" th:each="meal : ${view.meals}">
+                    <div class="meal-name" th:text="${meal.name}">Morgenmad</div>
+                    <div class="meal-kcal"><span th:text="${meal.calories}">450</span> kcal</div>
+                    <div class="macros muted">
+                        <span>P: <span th:text="${meal.proteinGram}">30</span>g</span>
+                        <span>K: <span th:text="${meal.carbohydrateGram}">55</span>g</span>
+                        <span>F: <span th:text="${meal.fatGram}">12</span>g</span>
+                    </div>
+                </div>
+            </div>
+
+            <p class="muted small" th:text="${view.macroPlan.macroSplit}">Protein 30%</p>
+            <details class="method">
+                <summary>Hvordan er det regnet ud?</summary>
+                <p th:text="${view.macroPlan.calculationMethod}">BMR ...</p>
+            </details>
+        </section>
+
+        <!-- Fremgang -->
+        <section class="card">
+            <div class="card-head">
+                <h2>Din fremgang</h2>
+                <a href="#" class="link">Se statistik &rsaquo;</a>
+            </div>
+
+            <div class="progress-stats">
+                <div class="pstat">
+                    <div class="pstat-icon">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 9a4 4 0 0 1 8 0"/></svg>
+                    </div>
+                    <div>
+                        <div class="muted small">Vægt</div>
+                        <div class="pstat-value" th:text="${view.weightChange}">-4,2 kg</div>
+                    </div>
+                </div>
+                <div class="pstat">
+                    <div class="pstat-icon">
+                        <svg viewBox="0 0 24 24"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/></svg>
+                    </div>
+                    <div>
+                        <div class="muted small">Træning</div>
+                        <div class="pstat-value"><span th:text="${view.trainingDays}">4</span> dage/uge</div>
+                    </div>
+                </div>
+                <div class="pstat">
+                    <div class="pstat-icon">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg>
+                    </div>
+                    <div>
+                        <div class="muted small">Pr. træning</div>
+                        <div class="pstat-value"><span th:text="${view.sessionLength}">60</span> min</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flash success" th:if="${weighInSuccess}" th:text="${weighInSuccess}"></div>
+            <div class="flash error" th:if="${weighInError}" th:text="${weighInError}"></div>
+
+            <form th:action="@{/dashboard/vaegt}" method="post" class="weigh-form">
+                <label for="weightKg" class="muted small">Registrer din vægt i dag</label>
+                <div class="weigh-row">
+                    <input type="number" id="weightKg" name="weightKg" step="0.1" min="30" max="300" placeholder="kg" required>
+                    <button type="submit" class="btn-outline">Gem vægt</button>
+                </div>
+                <span class="muted small" th:if="${view.lastWeighIn}" th:text="'Sidst vejet: ' + ${view.lastWeighIn}"></span>
+            </form>
+        </section>
+
+        <!-- Skade -->
+        <section class="card injury-card">
+            <div class="injury-icon">
+                <svg viewBox="0 0 24 24"><rect x="2" y="8" width="20" height="8" rx="4" transform="rotate(-45 12 12)"/><path d="M10 10h.01M14 14h.01M12 12h.01"/></svg>
+            </div>
+            <div class="injury-text">
+                <h3 th:text="${view.injury} ? 'Registreret skade' : 'Har du en skade?'">Har du en skade?</h3>
+                <p class="muted" th:if="${view.injury}" th:text="${view.injuryNotes}">Ondt i knæet</p>
+                <p class="muted" th:unless="${view.injury}">
+                    Få dit program tilpasset automatisk hvis du har en skade eller smerter.
+                </p>
+            </div>
+            <a th:href="@{/onboarding}" class="btn-outline">Tilpas mit program &rsaquo;</a>
+        </section>
+
+    </div>
+</main>
+</body>
+</html>

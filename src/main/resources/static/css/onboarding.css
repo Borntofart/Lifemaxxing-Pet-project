@@ -1,0 +1,142 @@
+/* Spørgeskemaet bygger videre på loginScreen.css */
+
+body.onboarding {
+  align-items: flex-start;
+  padding: 40px 0;
+}
+
+.onboarding-box {
+  width: 760px;
+}
+
+.step {
+  border-top: 1px solid #2c2c2c;
+  padding-top: 24px;
+  margin-bottom: 28px;
+}
+
+.step h2 {
+  font-size: 18px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.step-nr {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #39ff88;
+  color: #111111;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.field-label {
+  font-size: 14px;
+  color: #dddddd;
+  margin-bottom: 8px;
+}
+
+.hint {
+  color: #777777;
+  font-size: 12px;
+}
+
+/* Felter ved siden af hinanden */
+.row {
+  display: grid;
+  gap: 14px;
+}
+
+.row.three {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Valgkort - selve radio/checkbox er skjult, kortet viser valget */
+.options {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+  border-radius: 10px;
+}
+
+.options.two { grid-template-columns: repeat(2, 1fr); }
+.options.four { grid-template-columns: repeat(4, 1fr); }
+.options.seven { grid-template-columns: repeat(7, 1fr); }
+
+.options.invalid {
+  outline: 1px solid #ff3c3c;
+  outline-offset: 4px;
+}
+
+.option input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.option-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 100%;
+  padding: 12px 14px;
+  background: #292929;
+  border: 1px solid #444;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.option-card small {
+  color: #999999;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.option-card.pill {
+  align-items: center;
+  justify-content: center;
+  padding: 12px 6px;
+}
+
+.option-card:hover {
+  border-color: #666;
+}
+
+.option input:checked + .option-card {
+  border-color: #39ff88;
+  background: rgba(57, 255, 136, 0.1);
+}
+
+.option input:focus-visible + .option-card {
+  outline: 2px solid #39ff88;
+  outline-offset: 2px;
+}
+
+/* Datovælgeren skal også være mørk */
+input[type="date"] {
+  color-scheme: dark;
+}
+
+@media (max-width: 640px) {
+  .login-box.onboarding-box {
+    padding: 24px;
+  }
+
+  .row.three,
+  .options.two,
+  .options.four {
+    grid-template-columns: 1fr;
+  }
+
+  .options.seven {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

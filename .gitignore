@@ -1,0 +1,10 @@
+.idea/
+*.iml
+out/
+target/
+.claude/
+CLAUDE.md
+.junie/
+.copilot/
+.codex/
+.vscode/
