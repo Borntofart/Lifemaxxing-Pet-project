@@ -1,0 +1,129 @@
+/* Træningslog. Bygger videre på dashboard.css */
+
+.grid {
+  grid-template-columns: 3fr 2fr;
+  align-items: start;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.flash.pr {
+  background: #fff4d6;
+  color: #8a5a00;
+  font-weight: 600;
+}
+
+.day-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.day-tab {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  border: 1px solid #d9dce0;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.day-tab small {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.day-tab.active {
+  border-color: var(--green);
+  background: var(--green-soft);
+}
+
+.log-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.log-exercise {
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+
+.log-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+
+.log-head .ex-name {
+  flex: 1;
+}
+
+.set-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.set-row {
+  display: grid;
+  grid-template-columns: 50px 1fr 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.set-row input,
+.log-form textarea {
+  padding: 9px 12px;
+  border: 1px solid #d9dce0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  width: 100%;
+}
+
+.set-row input:focus,
+.log-form textarea:focus {
+  border-color: var(--green);
+}
+
+.log-form button {
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 6px;
+}
+
+.record-list {
+  list-style: none;
+}
+
+.record-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.record-list .ex-name {
+  flex: 1;
+}
+
+.record-value {
+  font-weight: 600;
+}
+
+@media (max-width: 1150px) {
+  .grid { grid-template-columns: 1fr; }
+}

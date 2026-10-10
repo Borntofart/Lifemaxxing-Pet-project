@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="da" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fejl | Lifemaxxing</title>
+    <link rel="stylesheet" th:href="@{/css/loginScreen.css}">
+</head>
+<body>
+<div class="background"></div>
+
+<div class="login-box">
+    <div class="logo">LIFE<span>MAXXING</span></div>
+    <p class="subtitle">Noget gik galt</p>
+
+    <div class="message error" th:text="${message}">Databasen svarer ikke</div>
+
+    <p class="register">
+        Prøv igen om lidt, eller <a th:href="@{/dashboard}">gå til overblikket</a>
+    </p>
+</div>
+</body>
+</html>

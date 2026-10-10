@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="da" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Træningslog | Lifemaxxing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/traening.css}">
+</head>
+<body>
+
+<!-- Topmenu -->
+<header class="topbar">
+    <a th:href="@{/dashboard}" class="brand">LIFE<span>MAXXING</span></a>
+
+    <nav class="nav">
+        <a th:href="@{/dashboard}" class="nav-link">
+            <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10h-6v-6H9v6H3z"/></svg>
+            Overblik
+        </a>
+        <a href="#" class="nav-link">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+            Mit program
+        </a>
+        <a href="#" class="nav-link">
+            <svg viewBox="0 0 24 24"><path d="M6 3v8a2 2 0 0 0 4 0V3M8 11v10M17 3c-2 2-2 6 0 8v10"/></svg>
+            Kostplan
+        </a>
+        <a th:href="@{/traening}" class="nav-link active">
+            <svg viewBox="0 0 24 24"><path d="M4 20V12M10 20V6M16 20v-9M22 20H2"/></svg>
+            Tracking
+        </a>
+        <a th:href="@{/onboarding}" class="nav-link">
+            <svg viewBox="0 0 24 24"><rect x="2" y="8" width="20" height="8" rx="4" transform="rotate(-45 12 12)"/><path d="M9 9l6 6"/></svg>
+            Skade &amp; Tilpasning
+        </a>
+        <a th:href="@{/onboarding}" class="nav-link">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>
+            Indstillinger
+        </a>
+    </nav>
+
+    <div class="user-menu">
+        <span class="avatar" th:text="${initials}">MN</span>
+        <span class="user-name" th:text="${username}">Mads</span>
+        <a th:href="@{/logout}" class="logout">Log ud</a>
+    </div>
+</header>
+
+<main class="page">
+
+    <h1>Træningslog</h1>
+    <p class="lead">Skriv dine sæt ind efter træning. Slår du en rekord, bliver den gemt automatisk.</p>
+
+    <div class="flash success" th:if="${logSuccess}" th:text="${logSuccess}"></div>
+    <div class="flash error" th:if="${logError}" th:text="${logError}"></div>
+    <div class="flash pr" th:each="pr : ${newRecords}" th:text="${pr}">Ny PR i Bænkpres: 80 kg x 5</div>
+
+    <div class="grid">
+
+        <!-- Log dagens træning -->
+        <section class="card">
+            <div class="card-head">
+                <h2>Log træning</h2>
+            </div>
+
+            <!-- Vælg dag. Kun træningsdage fra programmet vises -->
+            <div class="day-tabs">
+                <a th:each="d : ${week}" th:href="@{/traening(dag=${d.dayNr})}"
+                   th:classappend="${d.dayNr == day.dayNr} ? 'active'" class="day-tab">
+                    <span th:text="${dayNames[d.dayNr - 1]}">Mandag</span>
+                    <small th:text="${d.title}">Push</small>
+                </a>
+            </div>
+
+            <div th:if="${day.restDay}" class="rest-day">
+                <p><strong th:text="${dayNames[day.dayNr - 1]}">Lørdag</strong> er hviledag i dit program.
+                    Vælg en af dine træningsdage ovenfor, hvis du har trænet alligevel.</p>
+            </div>
+
+            <form th:unless="${day.restDay}" th:action="@{/traening}" method="post" class="log-form">
+                <input type="hidden" name="dag" th:value="${day.dayNr}">
+
+                <div class="category" th:text="${day.category}">Styrketræning</div>
+                <h3 class="workout-title" th:text="${day.title}">Push – Overkrop</h3>
+
+                <div class="log-exercise" th:each="ex, stat : ${day.exercises}">
+                    <div class="log-head">
+                        <span class="ex-nr" th:text="${stat.count}">1</span>
+                        <span class="ex-name" th:text="${ex.name}">Bænkpres</span>
+                        <span class="ex-dose" th:text="${ex.dosage}">4 x 6-10</span>
+                    </div>
+                    <p class="muted small" th:if="${ex.restSec}" th:text="${ex.restSec % 60 == 0} ? 'Pause ' + ${ex.restSec / 60} + ' min mellem sæt' : 'Pause ' + ${ex.restSec} + ' sek mellem sæt'">Pause 3 min</p>
+
+                    <div th:unless="${ex.timed}" class="set-rows">
+                        <div class="set-row" th:each="s : ${#numbers.sequence(1, ex.sets)}">
+                            <span class="muted small" th:text="'Sæt ' + ${s}">Sæt 1</span>
+                            <input type="number" min="1" max="100" th:name="'reps_' + ${ex.id} + '_' + ${s}"
+                                   th:placeholder="${ex.repsMin} + (${ex.repsMax} != null ? '-' + ${ex.repsMax} : '') + ' reps'">
+                            <input type="number" min="0" max="500" step="0.5" th:name="'kg_' + ${ex.id} + '_' + ${s}"
+                                   placeholder="kg">
+                        </div>
+                    </div>
+                </div>
+
+                <label for="noter" class="muted small">Noter <span class="hint">(valgfri)</span></label>
+                <textarea id="noter" name="noter" rows="2" placeholder="fx god energi i dag, knæet drillede lidt"></textarea>
+
+                <button type="submit" class="btn-primary">Gem træning</button>
+            </form>
+        </section>
+
+        <div class="side">
+            <!-- Personlige rekorder -->
+            <section class="card">
+                <div class="card-head">
+                    <h2>Dine rekorder</h2>
+                </div>
+                <p class="muted" th:if="${#lists.isEmpty(records)}">Du har ingen rekorder endnu. Log din første træning.</p>
+                <ul class="record-list" th:unless="${#lists.isEmpty(records)}">
+                    <li th:each="r : ${records}">
+                        <span class="ex-name" th:text="${r.exerciseName}">Bænkpres</span>
+                        <span class="record-value" th:text="${r.display}">80 kg x 5</span>
+                        <span class="muted small" th:text="${#temporals.format(r.date, 'd/M')}">12/4</span>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Seneste træninger -->
+            <section class="card">
+                <div class="card-head">
+                    <h2>Seneste træninger</h2>
+                </div>
+                <p class="muted" th:if="${#lists.isEmpty(sessions)}">Ingen træninger logget endnu.</p>
+                <ul class="record-list" th:unless="${#lists.isEmpty(sessions)}">
+                    <li th:each="s : ${sessions}">
+                        <span class="ex-name" th:text="${s.dayName}">Push</span>
+                        <span class="muted small" th:text="${s.setCount} + ' sæt'">18 sæt</span>
+                        <span class="muted small" th:text="${#temporals.format(s.started, 'd/M HH:mm')}">12/4 17:30</span>
+                    </li>
+                </ul>
+            </section>
+        </div>
+
+    </div>
+</main>
+</body>
+</html>
