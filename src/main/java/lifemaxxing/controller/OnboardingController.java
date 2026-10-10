@@ -4,6 +4,7 @@ import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
 import lifemaxxing.dto.FormError;
 import lifemaxxing.dto.OnboardingForm;
+import lifemaxxing.exceptions.DatabaseException;
 import lifemaxxing.model.FitnessGoal.GoalType;
 import lifemaxxing.model.User;
 import lifemaxxing.model.UserProfile.ExperienceLevel;
@@ -44,7 +45,7 @@ public class OnboardingController {
         return model;
     }
 
-    public void showForm(Context ctx) {
+    public void showForm(Context ctx) throws DatabaseException {
         User user = userService.findById(SessionUtil.getUserId(ctx.req().getSession())).orElse(null);
         if (user == null) {
             ctx.redirect("/login");
@@ -57,7 +58,7 @@ public class OnboardingController {
         ctx.render("onboarding", model);
     }
 
-    public void submit(Context ctx) {
+    public void submit(Context ctx) throws DatabaseException {
         User user = userService.findById(SessionUtil.getUserId(ctx.req().getSession())).orElse(null);
         if (user == null) {
             ctx.redirect("/login");

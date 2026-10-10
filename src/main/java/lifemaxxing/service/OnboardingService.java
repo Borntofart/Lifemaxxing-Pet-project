@@ -2,18 +2,22 @@ package lifemaxxing.service;
 
 import lifemaxxing.dto.FormError;
 import lifemaxxing.dto.OnboardingForm;
+import lifemaxxing.exceptions.DatabaseException;
 import lifemaxxing.model.FitnessGoal;
 import lifemaxxing.model.FitnessGoal.GoalType;
 import lifemaxxing.model.TrainingPreference;
 import lifemaxxing.model.User;
 import lifemaxxing.model.UserProfile;
 import lifemaxxing.model.WeighIn;
-import lifemaxxing.repository.UserRepository;
+import lifemaxxing.model.WorkoutDay;
+import lifemaxxing.persistence.ProgramMapper;
+import lifemaxxing.persistence.UserMapper;
+import lifemaxxing.persistence.WeighInMapper;
 
 import java.time.LocalDate;
 import java.util.List;
 
-// Tager svarene fra spørgeskemaet og laver profil, mål, præferencer og makroplan
+// Tager svarene fra spørgeskemaet og laver profil, mål, præferencer, makroplan og træningsprogram
 public class OnboardingService {
 
     private static final List<String> FOCUS_OPTIONS = List.of("Styrke", "Cardio", "HIIT", "Blanding af alt");
@@ -21,12 +25,19 @@ public class OnboardingService {
     private static final List<String> PHYSICAL_OPTIONS = List.of("Stærkere", "Mere toned", "Eksplosiv", "Større");
     private static final List<Integer> DURATION_OPTIONS = List.of(30, 45, 60, 90);
 
-    private final UserRepository userRepository;
+    private final UserMapper userMapper;
+    private final WeighInMapper weighInMapper;
+    private final ProgramMapper programMapper;
     private final MacroService macroService;
+    private final WorkoutService workoutService;
 
-    public OnboardingService(UserRepository userRepository, MacroService macroService) {
-        this.userRepository = userRepository;
+    public OnboardingService(UserMapper userMapper, WeighInMapper weighInMapper, ProgramMapper programMapper,
+                             MacroService macroService, WorkoutService workoutService) {
+        this.userMapper = userMapper;
+        this.weighInMapper = weighInMapper;
+        this.programMapper = programMapper;
         this.macroService = macroService;
+        this.workoutService = workoutService;
     }
 
     public FormError validate(OnboardingForm f) {
@@ -85,7 +96,7 @@ public class OnboardingService {
     }
 
     // Kald kun efter validate har givet null
-    public void complete(User user, OnboardingForm f) {
+    public void complete(User user, OnboardingForm f) throws DatabaseException {
         float weight = f.getWeightKg();
 
         UserProfile profile = new UserProfile(f.getAge(), f.getGender(), f.getHeightCm(), weight,
@@ -114,10 +125,18 @@ public class OnboardingService {
 
         WeighIn last = user.getLatestWeighIn();
         if (last == null || last.getWeightKg() != weight) {
-            user.addWeighIn(new WeighIn(LocalDate.now(), weight));
+            WeighIn weighIn = new WeighIn(LocalDate.now(), weight);
+            user.addWeighIn(weighIn);
+            weighInMapper.saveWeighIn(user.getId(), weighIn);
         }
 
-        userRepository.save(user);
+        userMapper.saveProfile(user, profile);
+
+        // Et nyt program hver gang svarene gemmes. Det gamle bliver afsluttet men ikke slettet
+        List<WorkoutDay> week = workoutService.generateWeek(user);
+        int programId = programMapper.createProgram(user.getId(), prefs.getRecommendedSplit(), goal, prefs,
+                profile.getExperienceLevel(), user.getMacroPlan(), week);
+        user.setActiveProgramId(programId);
     }
 
     // Fylder formularen ud med de svar brugeren allerede har givet

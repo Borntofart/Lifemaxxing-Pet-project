@@ -1,13 +1,16 @@
 package lifemaxxing.service;
 
 import lifemaxxing.dto.DashboardView;
+import lifemaxxing.exceptions.DatabaseException;
 import lifemaxxing.model.FitnessGoal;
 import lifemaxxing.model.TrainingPreference;
 import lifemaxxing.model.User;
 import lifemaxxing.model.UserProfile;
 import lifemaxxing.model.WeighIn;
+import lifemaxxing.model.MacroPlan;
 import lifemaxxing.model.WorkoutDay;
-import lifemaxxing.repository.UserRepository;
+import lifemaxxing.persistence.ProgramMapper;
+import lifemaxxing.persistence.WeighInMapper;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -21,16 +24,18 @@ public class DashboardService {
 
     private final WorkoutService workoutService;
     private final MacroService macroService;
-    private final UserRepository userRepository;
+    private final WeighInMapper weighInMapper;
+    private final ProgramMapper programMapper;
 
     public DashboardService(WorkoutService workoutService, MacroService macroService,
-                            UserRepository userRepository) {
+                            WeighInMapper weighInMapper, ProgramMapper programMapper) {
         this.workoutService = workoutService;
         this.macroService = macroService;
-        this.userRepository = userRepository;
+        this.weighInMapper = weighInMapper;
+        this.programMapper = programMapper;
     }
 
-    public DashboardView buildView(User user) {
+    public DashboardView buildView(User user) throws DatabaseException {
         UserProfile profile = user.getProfile();
         FitnessGoal goal = user.getGoal();
         TrainingPreference prefs = user.getPreference();
@@ -76,15 +81,26 @@ public class DashboardService {
         return view;
     }
 
-    // Ny vejning opdaterer også makroplanen, da den regnes ud fra vægten
-    public String registerWeighIn(User user, Float weightKg) {
+    // Ny vejning opdaterer også makroplanen, da den regnes ud fra vægten.
+    // Ændringen i kalorier gemmes i makro_justering og vejningen peger på den
+    public String registerWeighIn(User user, Float weightKg) throws DatabaseException {
         if (weightKg == null || weightKg < 30 || weightKg > 300) {
             return "Vægten skal være mellem 30 og 300 kg.";
         }
-        user.addWeighIn(new WeighIn(LocalDate.now(), weightKg));
+        WeighIn weighIn = new WeighIn(LocalDate.now(), weightKg);
+        int weighInId = weighInMapper.saveWeighIn(user.getId(), weighIn);
+        user.addWeighIn(weighIn);
         user.getProfile().setWeightKg(weightKg);
-        user.setMacroPlan(macroService.calculateFor(user.getProfile(), user.getGoal(), user.getPreference()));
-        userRepository.save(user);
+
+        MacroPlan oldPlan = user.getMacroPlan();
+        MacroPlan newPlan = macroService.calculateFor(user.getProfile(), user.getGoal(), user.getPreference());
+        int change = newPlan.getCalorieGoal() - oldPlan.getCalorieGoal();
+        if (change != 0) {
+            String reason = "Ny vejning på " + number(weightKg) + " kg";
+            int adjustmentId = programMapper.adjustMacroPlan(user.getActiveProgramId(), newPlan, change, reason);
+            weighInMapper.linkAdjustment(weighInId, adjustmentId);
+        }
+        user.setMacroPlan(newPlan);
         return null;
     }
 

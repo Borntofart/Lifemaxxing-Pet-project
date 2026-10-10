@@ -27,7 +27,7 @@
             <svg viewBox="0 0 24 24"><path d="M6 3v8a2 2 0 0 0 4 0V3M8 11v10M17 3c-2 2-2 6 0 8v10"/></svg>
             Kostplan
         </a>
-        <a href="#" class="nav-link">
+        <a th:href="@{/traening}" class="nav-link">
             <svg viewBox="0 0 24 24"><path d="M4 20V12M10 20V6M16 20v-9M22 20H2"/></svg>
             Tracking
         </a>
@@ -118,6 +118,7 @@
             </ul>
 
             <p class="muted small split" th:text="'Dit split: ' + ${view.splitText}">Dit split: PPL</p>
+            <a th:href="@{/traening}" class="btn-outline log-btn">Log træning</a>
             <a href="#" class="btn-primary">Se program</a>
         </section>
 

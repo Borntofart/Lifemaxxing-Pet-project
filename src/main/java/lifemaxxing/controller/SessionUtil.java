@@ -2,8 +2,6 @@ package lifemaxxing.controller;
 
 import jakarta.servlet.http.HttpSession;
 
-import java.util.UUID;
-
 // Samlet sted for hvad der ligger i sessionen
 public final class SessionUtil {
 
@@ -11,12 +9,12 @@ public final class SessionUtil {
 
     private SessionUtil() {}
 
-    public static void login(HttpSession session, UUID userId) {
+    public static void login(HttpSession session, int userId) {
         session.setAttribute(USER_ID, userId);
     }
 
-    public static UUID getUserId(HttpSession session) {
-        return (UUID) session.getAttribute(USER_ID);
+    public static Integer getUserId(HttpSession session) {
+        return (Integer) session.getAttribute(USER_ID);
     }
 
     public static boolean isLoggedIn(HttpSession session) {

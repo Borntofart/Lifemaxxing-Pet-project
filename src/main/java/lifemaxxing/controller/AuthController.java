@@ -4,6 +4,7 @@ import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
 import jakarta.servlet.http.HttpSession;
 import lifemaxxing.dto.FormError;
+import lifemaxxing.exceptions.DatabaseException;
 import lifemaxxing.dto.LoginForm;
 import lifemaxxing.dto.RegisterForm;
 import lifemaxxing.model.User;
@@ -30,11 +31,11 @@ public class AuthController {
         config.routes.get("/logout", this::logout);
     }
 
-    public void home(Context ctx) {
+    public void home(Context ctx) throws DatabaseException {
         ctx.redirect(hasValidUser(ctx.req().getSession()) ? "/dashboard" : "/login");
     }
 
-    public void showLogin(Context ctx) {
+    public void showLogin(Context ctx) throws DatabaseException {
         String created = ctx.queryParam("created");
         String logout = ctx.queryParam("logout");
         if (hasValidUser(ctx.req().getSession())) {
@@ -54,7 +55,7 @@ public class AuthController {
         ctx.render("login", model);
     }
 
-    public void login(Context ctx) {
+    public void login(Context ctx) throws DatabaseException {
         LoginForm form = new LoginForm();
         form.setUsername(ctx.formParam("username"));
         form.setPassword(ctx.formParam("password"));
@@ -89,7 +90,7 @@ public class AuthController {
         ctx.render("register", model);
     }
 
-    public void register(Context ctx) {
+    public void register(Context ctx) throws DatabaseException {
         RegisterForm form = new RegisterForm();
         form.setUsername(ctx.formParam("username"));
         form.setEmail(ctx.formParam("email"));
@@ -117,7 +118,7 @@ public class AuthController {
 
     // Sessionen kan pege på en bruger der ikke findes mere efter en genstart.
     // Så rydder vi den, ellers sender login og dashboard brugeren frem og tilbage
-    private boolean hasValidUser(HttpSession session) {
+    private boolean hasValidUser(HttpSession session) throws DatabaseException {
         if (userService.findById(SessionUtil.getUserId(session)).isPresent()) {
             return true;
         }

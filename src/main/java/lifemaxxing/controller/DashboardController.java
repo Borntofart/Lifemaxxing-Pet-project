@@ -2,6 +2,7 @@ package lifemaxxing.controller;
 
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
+import lifemaxxing.exceptions.DatabaseException;
 import lifemaxxing.model.User;
 import lifemaxxing.service.DashboardService;
 import lifemaxxing.service.UserService;
@@ -24,7 +25,7 @@ public class DashboardController {
         config.routes.post("/dashboard/vaegt", this::addWeighIn);
     }
 
-    public void dashboard(Context ctx) {
+    public void dashboard(Context ctx) throws DatabaseException {
         User user = userService.findById(SessionUtil.getUserId(ctx.req().getSession())).orElse(null);
         if (user == null) {
             ctx.redirect("/login");
@@ -42,7 +43,7 @@ public class DashboardController {
         ctx.render("dashboard", model);
     }
 
-    public void addWeighIn(Context ctx) {
+    public void addWeighIn(Context ctx) throws DatabaseException {
         User user = userService.findById(SessionUtil.getUserId(ctx.req().getSession())).orElse(null);
         if (user == null) {
             ctx.redirect("/login");

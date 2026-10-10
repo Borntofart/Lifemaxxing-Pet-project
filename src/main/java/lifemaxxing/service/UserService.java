@@ -1,23 +1,33 @@
 package lifemaxxing.service;
 
+import lifemaxxing.dto.ActiveProgram;
 import lifemaxxing.dto.FormError;
 import lifemaxxing.dto.RegisterForm;
+import lifemaxxing.exceptions.DatabaseException;
 import lifemaxxing.model.User;
-import lifemaxxing.repository.UserRepository;
+import lifemaxxing.model.UserProfile;
+import lifemaxxing.model.WeighIn;
+import lifemaxxing.persistence.ProgramMapper;
+import lifemaxxing.persistence.UserMapper;
+import lifemaxxing.persistence.WeighInMapper;
+import lifemaxxing.security.PasswordHasher;
 
 import java.util.Optional;
-import java.util.UUID;
 
 public class UserService {
 
-    private final UserRepository userRepository;
+    private final UserMapper userMapper;
+    private final WeighInMapper weighInMapper;
+    private final ProgramMapper programMapper;
 
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserService(UserMapper userMapper, WeighInMapper weighInMapper, ProgramMapper programMapper) {
+        this.userMapper = userMapper;
+        this.weighInMapper = weighInMapper;
+        this.programMapper = programMapper;
     }
 
     // Samme regler som den gamle register.js, bare flyttet over i java
-    public FormError validateRegistration(RegisterForm form) {
+    public FormError validateRegistration(RegisterForm form) throws DatabaseException {
         String username = trim(form.getUsername());
         String email = trim(form.getEmail());
         String password = form.getPassword() == null ? "" : form.getPassword();
@@ -41,29 +51,60 @@ public class UserService {
         if (!password.equals(password2)) {
             return new FormError("password2", "De to kodeord er ikke ens.");
         }
-        if (userRepository.existsByUsername(username)) {
+        if (userMapper.getUserByUsername(username) != null) {
             return new FormError("username", "Brugernavnet er allerede taget.");
+        }
+        if (userMapper.emailExists(email)) {
+            return new FormError("email", "Der findes allerede en bruger med den email.");
         }
         return null;
     }
 
     // Kald kun efter validateRegistration har givet null
-    public User register(RegisterForm form) {
-        User user = new User(trim(form.getUsername()), trim(form.getEmail()), form.getPassword());
-        return userRepository.save(user);
+    public User register(RegisterForm form) throws DatabaseException {
+        User user = new User(trim(form.getUsername()), trim(form.getEmail()), PasswordHasher.hash(form.getPassword()));
+        return userMapper.createUser(user);
     }
 
-    // TODO: kodeord skal hashes når databasen kommer på
-    public Optional<User> login(String username, String password) {
+    public Optional<User> login(String username, String password) throws DatabaseException {
         if (username == null || password == null) {
             return Optional.empty();
         }
-        return userRepository.findByUsername(username.trim())
-                .filter(u -> u.getPassword().equals(password));
+        User user = userMapper.getUserByUsername(username.trim());
+        if (user == null || !PasswordHasher.matches(password, user.getPasswordHash())) {
+            return Optional.empty();
+        }
+        return Optional.of(user);
     }
 
-    public Optional<User> findById(UUID id) {
-        return id == null ? Optional.empty() : userRepository.findById(id);
+    // Samler brugeren fra bruger, bruger_profil, vejning og det aktive program
+    public Optional<User> findById(Integer id) throws DatabaseException {
+        if (id == null) {
+            return Optional.empty();
+        }
+        User user = userMapper.getUserById(id);
+        if (user == null) {
+            return Optional.empty();
+        }
+
+        for (WeighIn weighIn : weighInMapper.getWeighIns(id)) {
+            user.addWeighIn(weighIn);
+        }
+
+        UserProfile profile = userMapper.getProfile(id);
+        ActiveProgram program = programMapper.getActiveProgram(id);
+        if (profile != null && program != null) {
+            WeighIn latest = user.getLatestWeighIn();
+            profile.setWeightKg(latest != null ? latest.getWeightKg() : program.goal().getStartWeightKg());
+            profile.setExperienceLevel(program.experienceLevel());
+
+            user.setProfile(profile);
+            user.setGoal(program.goal());
+            user.setPreference(program.preference());
+            user.setMacroPlan(program.macroPlan());
+            user.setActiveProgramId(program.programId());
+        }
+        return Optional.of(user);
     }
 
     private String trim(String s) {
